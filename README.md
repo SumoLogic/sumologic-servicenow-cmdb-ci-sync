@@ -1,11 +1,9 @@
 # sumologic-servicenow-cmdb-ci-sync
 ## Historical Import 
 
-This section provides information to import historical data from Sumo Logic into ServiceNow.
+The historical import script queries Sumo Logic based on the input parameters and stores the VMWare/AWS CloudTrail events in files, then the events are imported into ServiceNow by calling ServiceNow REST APIs.
 
 **Note: For Vmware, the import will only work if the data has been imported into Sumo Logic using this script release or a later release.**
-
-The historical import script queries Sumo Logic based on the input parameters and stores the VMWare/AWS CloudTrail events in files, then the events are imported into ServiceNow by calling ServiceNow REST APIs.
 
 To import historical data, follow the below steps on a Unix machine:
 
