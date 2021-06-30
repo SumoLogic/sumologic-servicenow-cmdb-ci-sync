@@ -11,9 +11,10 @@ To import historical data, follow the below steps on a Unix machine:
 
 * Clone the script:
   * git clone https://github.com/SumoLogic/sumologic-servicenow-cmdb-ci-sync.git 
-* Edit the file sumo_snow_historical_import.sh, set the parameters as explained in the file.
+* Edit the file **sumo_snow_historical_import.sh**, set the parameters as explained in the file.
 
-* Execute the script by running the below command:
+* Execute the script by running the command:
+    
     **sh sumo_snow_historical_import.sh**
 
 * Verify the files generated in the specified folder and records created in ServiceNow.
