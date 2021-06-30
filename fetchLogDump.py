@@ -76,7 +76,8 @@ class LogDump(object):
         response = self.common_requests.make_request(url, "post", headers=headers, data=data,
                                                      auth=(self.access_id, self.access_key))
 
-        response = json.loads(response)
+        if response:
+            response = json.loads(response)
         if response and "id" in response:
             logging.debug(str(datetime.now()) + " IN SEARCH JOB API :- Rest API Call Complete")
             return response["id"]
@@ -132,7 +133,8 @@ class LogDump(object):
 def main():
     start_time = datetime.now()
     try:
-        logging.basicConfig(filename='fetch_logs_from_sumo.log', level=logging.INFO)
+        logfile = 'fetch_logs_from_sumo_{}.log'.format(datetime.now().strftime('%d-%m-%Y-%T'))
+        logging.basicConfig(filename=logfile, level=logging.INFO)
 
         logging.info(str(datetime.now()) + "************************ Sumo Logic Service Now Configuration Item Historical Import : ************************")
         print(str(datetime.now()) + "************************ Sumo Logic Service Now Configuration Item Historical Import : ************************")

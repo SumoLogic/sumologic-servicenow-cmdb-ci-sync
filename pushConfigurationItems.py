@@ -20,7 +20,6 @@ class Snow(object):
         self.snow_password = run_args.snow_password
         self.snow_data_source_endpoint = run_args.snow_url + "/api/now/import/x_sul_sumo_logic_sg_sumo_logic_ds/insertMultiple"
         self.snow_timezone = run_args.snow_timezone
-        self.snow_vcenter_uuid = run_args.snow_vcenter_uuid
 
         # Common Utils classes
         self.common_requests = CommonRequests()
@@ -54,20 +53,20 @@ class Snow(object):
                                             if data == "Invalid" or data == None:
                                                 continue
                                             response = self.common_requests.make_request(self.snow_data_source_endpoint, "post", headers=headers, data=data,
-                                                                                    auth=(self.snow_username, self.snow_password))
+                                                                                   auth=(self.snow_username, self.snow_password))
                                             # Check for HTTP codes other than 202
                                             if response == "":
-                                                exit()
+                                               exit()
 
                                 if count >= 10000:
                                     time.sleep(60)
                                     count = 0
             else:
-                print(str(datetime.now()) + " Destination directory is empty:" + folder)
-                logging.info(str(datetime.now()) + " Destination directory is empty:" + folder)
+                print(str(datetime.now()) + " Source directory is empty:" + folder)
+                logging.info(str(datetime.now()) + " Source directory is empty:" + folder)
         else:
-                print(str(datetime.now()) + " Destination directory does not exist:" + folder)
-                logging.info(str(datetime.now()) + " Destination directory does not exist:" + folder)
+                print(str(datetime.now()) + " Source directory does not exist:" + folder + " Make sure that the Sumo Logic export completed successfully, verify the log file (fetch_logs_from_sumo.log) for more details.")
+                logging.info(str(datetime.now()) + " Source directory does not exist:" + folder)
 
         return None
 
@@ -150,13 +149,11 @@ class Snow(object):
             data['server'] = re.search('host=(.+?),,,', line)[1] if re.search('host=(.+?),,,', line) else ""
             data['datacenter_name'] = re.search('datacenter=(.+?),,,', line)[1] if re.search('datacenter=(.+?),,,', line) else ""
             event_type = re.search('eventType=(.+?),,,', line)[1] if re.search('eventType=(.+?),,,', line) else ""
-            data['datacenter_id'] = re.search('datacenterMoref=(.+?)$', line)[1] if re.search('datacenterMoref=(.+?)$', line) else ""
+            data['datacenter_id'] = re.search('datacenterMoref=(.+?),,,', line)[1] if re.search('datacenterMoref=(.+?),,,', line) else ""
             data['service_account_type'] = "cmdb_ci_vcenter_datacenter"
-            if self.snow_vcenter_uuid and self.snow_vcenter_uuid != 'None':
-                data['service_account_id'] = self.snow_vcenter_uuid
-            else: # Try to Extract vCenter UUID from logs.
-                #data['service_account_id'] = "vCenterUUID=(.+?)"
-                data['service_account_id'] = "09613ad0-45da-11eb-b378-0242ac130007"
+            # Try to Extract vCenter UUID from logs.
+            data['service_account_id'] = re.search('vCenterUUID=(.+?)$', line)[1] if re.search('vCenterUUID=(.+?)$', line) else ""
+            # data['service_account_id'] = "09613ad0-45da-11eb-b378-0242ac130007"
             # datacenter_id = re.search('datacenterMoref=(.+?),,,', line)
             # service_account_id = "vCenterUUID=(.+?)"
             data['vm_disk_space_gb'] = ""
@@ -195,7 +192,8 @@ class Snow(object):
 def main():
     start_time = datetime.now()
     try:
-        logging.basicConfig(filename='push_items_to_snow.log', level=logging.INFO)
+        logfile = 'push_items_to_snow_{}.log'.format(datetime.now().strftime('%d-%m-%Y-%T'))
+        logging.basicConfig(filename=logfile, level=logging.INFO)
 
         logging.info(str(datetime.now()) + "************************ Pushing Data to ServiceNow : Start ************************")
         print(str(datetime.now()) + "************************ Pushing Data to ServiceNow : Start ************************")
@@ -207,14 +205,10 @@ def main():
                             help="ServiceNow Password(required).")
         parser.add_argument("-f", "--folder_name", dest="folder_name", required=True,
                             help="Folder Name to read the the files.")
-        parser.add_argument("-c", "--snow_data_source_cid", dest="snow_data_source_cid", required=True,
-                            help="ServiceNow Sumo Logic Data Source CID.")
         parser.add_argument("-su", "--snow_url", dest="snow_url", required=True,
                             help="ServiceNow Base URL.")
         parser.add_argument("-tz", "--snow_timezone", dest="snow_timezone", required=True,
                             help="Timezone of events.")
-        parser.add_argument("-vu", "--snow_vcenter_uuid", dest="snow_vcenter_uuid", required=False,
-                            help="vCenter UUID (Optional).")
 
         args = parser.parse_args()
 
